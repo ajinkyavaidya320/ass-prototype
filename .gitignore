@@ -1,0 +1,21 @@
+# dependencies
+node_modules/
+
+# production
+dist/
+build/
+
+# env
+.env
+
+# python
+__pycache__/
+*.pyc
+venv/
+
+# vscode
+.vscode/
+
+# mac/windows
+.DS_Store
+Thumbs.db

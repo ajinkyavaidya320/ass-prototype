@@ -1,0 +1,1230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ASS · Adaptive Scaffolding System</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+/* ═══ DESIGN TOKENS ════════════════════════════════════════════════════ */
+:root {
+  /* Surfaces */
+  --s0: #07090d;
+  --s1: #0d1017;
+  --s2: #121620;
+  --s3: #171c28;
+  --s4: #1d2333;
+  --s5: #232b3e;
+
+  /* Edges */
+  --e1: #2a3349;
+  --e2: #374060;
+  --e3: #445278;
+
+  /* Text */
+  --t1: #e8eef8;
+  --t2: #b8c4d8;
+  --t3: #7a8aaa;
+  --t4: #4a5878;
+
+  /* Accent system */
+  --teal:    #00d4aa;
+  --teal-d:  #00a882;
+  --teal-bg: rgba(0,212,170,.08);
+  --teal-bd: rgba(0,212,170,.2);
+
+  --amber:    #f0b429;
+  --amber-d:  #c8920f;
+  --amber-bg: rgba(240,180,41,.08);
+  --amber-bd: rgba(240,180,41,.2);
+
+  --rose:    #f05672;
+  --rose-d:  #c83050;
+  --rose-bg: rgba(240,86,114,.08);
+  --rose-bd: rgba(240,86,114,.2);
+
+  --violet:  #9b7ef8;
+  --violet-bg: rgba(155,126,248,.08);
+  --violet-bd: rgba(155,126,248,.2);
+
+  --sky:    #4db8f0;
+  --sky-bg: rgba(77,184,240,.08);
+  --sky-bd: rgba(77,184,240,.2);
+
+  --gold:    #f0d060;
+  --gold-bg: rgba(240,208,96,.08);
+
+  /* Typography */
+  --mono: 'JetBrains Mono', monospace;
+  --serif: 'Instrument Serif', serif;
+  --sans: 'DM Sans', sans-serif;
+
+  /* Effects */
+  --radius: 6px;
+  --radius-lg: 10px;
+  --shadow: 0 4px 32px rgba(0,0,0,.5);
+  --shadow-sm: 0 2px 8px rgba(0,0,0,.35);
+  --glow-teal: 0 0 20px rgba(0,212,170,.15);
+}
+
+/* ═══ RESET ════════════════════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; }
+body { font-family: var(--sans); background: var(--s0); color: var(--t1);
+       font-size: 13px; line-height: 1.55; }
+::selection { background: rgba(0,212,170,.25); }
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--e2); border-radius: 2px; }
+
+/* ═══ LAYOUT ═══════════════════════════════════════════════════════════ */
+.app {
+  display: grid;
+  grid-template-columns: 268px 1fr 292px;
+  grid-template-rows: 48px 1fr;
+  height: 100vh;
+}
+
+/* ═══ TOPBAR ════════════════════════════════════════════════════════════ */
+.topbar {
+  grid-column: 1/-1;
+  display: flex; align-items: center; gap: 0;
+  background: var(--s1); border-bottom: 1px solid var(--e1);
+  position: relative; z-index: 30;
+}
+.topbar::after {
+  content: ''; position: absolute; bottom: -1px; left: 0; right: 0;
+  height: 1px; background: linear-gradient(90deg, var(--teal-d), transparent 55%);
+}
+.tb-brand {
+  display: flex; align-items: center; gap: 12px;
+  padding: 0 20px; border-right: 1px solid var(--e1);
+  height: 100%; min-width: 268px;
+}
+.tb-logo {
+  font-family: var(--serif); font-size: 18px; color: var(--teal);
+  letter-spacing: -.02em; line-height: 1;
+}
+.tb-version {
+  font-family: var(--mono); font-size: 9px; color: var(--t4);
+  background: var(--s3); border: 1px solid var(--e1);
+  padding: 2px 7px; border-radius: 3px; letter-spacing: .06em;
+}
+.tb-center {
+  flex: 1; display: flex; align-items: center; justify-content: center; gap: 24px;
+}
+.tb-stat {
+  display: flex; align-items: center; gap: 7px;
+  font-family: var(--mono); font-size: 10px; color: var(--t3);
+}
+.tb-dot {
+  width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
+  transition: background .4s;
+}
+.tb-val { color: var(--t2); font-weight: 500; }
+.tb-right {
+  display: flex; align-items: center; gap: 10px;
+  padding: 0 16px; border-left: 1px solid var(--e1); height: 100%;
+}
+.tb-badge {
+  font-family: var(--mono); font-size: 10px; padding: 3px 10px;
+  border-radius: 4px; background: var(--s3); border: 1px solid var(--e2);
+  color: var(--t3); letter-spacing: .04em;
+}
+
+/* ═══ LEFT SIDEBAR ══════════════════════════════════════════════════════ */
+.sidebar-left {
+  background: var(--s1); border-right: 1px solid var(--e1);
+  display: flex; flex-direction: column; overflow: hidden;
+}
+.sidebar-right {
+  background: var(--s1); border-left: 1px solid var(--e1);
+  display: flex; flex-direction: column; overflow: hidden;
+}
+
+/* Section labels */
+.sec-lbl {
+  font-family: var(--mono); font-size: 9px; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--t4);
+  padding: 10px 16px 7px; border-bottom: 1px solid var(--e1);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.sec-lbl-dot {
+  width: 5px; height: 5px; border-radius: 50%; background: var(--teal); opacity: .5;
+}
+.sec-body { padding: 12px 14px; border-bottom: 1px solid var(--e1); }
+
+/* Task card */
+.task-card {
+  background: var(--s3); border: 1px solid var(--e1);
+  border-left: 2px solid var(--teal-d); border-radius: var(--radius);
+  padding: 10px 12px;
+}
+.task-chip {
+  font-family: var(--mono); font-size: 9px; letter-spacing: .08em;
+  color: var(--teal); margin-bottom: 7px; opacity: .8;
+}
+.task-title {
+  font-family: var(--serif); font-size: 14px; color: var(--t1);
+  margin-bottom: 6px; line-height: 1.35;
+}
+.task-desc { font-size: 11px; color: var(--t3); line-height: 1.6; }
+
+/* Participants */
+.p-row { display: flex; align-items: center; gap: 9px; margin-bottom: 9px; }
+.p-row:last-child { margin-bottom: 0; }
+.av {
+  width: 26px; height: 26px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 9px; font-weight: 600; font-family: var(--mono); flex-shrink: 0;
+}
+.p-info { flex: 1; min-width: 0; }
+.p-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 3px; }
+.p-name { font-size: 11px; font-weight: 500; }
+.p-pct { font-family: var(--mono); font-size: 10px; color: var(--t4); }
+.bar { height: 2px; background: var(--s5); border-radius: 2px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 2px; transition: width .7s ease; }
+.p-badge {
+  font-family: var(--mono); font-size: 9px; padding: 1px 5px;
+  border-radius: 3px; margin-left: 6px;
+}
+
+/* Fading states */
+.fading-list { display: flex; flex-direction: column; gap: 5px; }
+.fading-item {
+  display: flex; align-items: center; gap: 9px;
+  padding: 7px 10px; border-radius: var(--radius);
+  border: 1px solid transparent; transition: all .25s; cursor: default;
+}
+.fading-item.active {
+  border-color: var(--e2); background: var(--s3);
+}
+.fading-icon { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.fading-name { font-size: 11px; font-weight: 500; color: var(--t3); flex: 1; }
+.fading-name.active { color: var(--t1); }
+.fading-sub { font-family: var(--mono); font-size: 9px; color: var(--t4); }
+
+/* Metrics grid */
+.metric-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.metric {
+  background: var(--s2); border: 1px solid var(--e1);
+  border-radius: var(--radius); padding: 9px 11px;
+}
+.metric-val {
+  font-family: var(--mono); font-size: 22px; font-weight: 400;
+  line-height: 1; letter-spacing: -.02em;
+}
+.metric-lbl { font-size: 10px; color: var(--t4); margin-top: 4px; }
+
+/* Config panel */
+.cfg-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 7px; }
+.cfg-row:last-child { margin-bottom: 0; }
+.cfg-lbl { font-family: var(--mono); font-size: 10px; color: var(--t3); }
+.cfg-val {
+  font-family: var(--mono); font-size: 10px; color: var(--teal);
+  background: var(--teal-bg); border: 1px solid var(--teal-bd);
+  padding: 1px 7px; border-radius: 3px;
+}
+
+/* Scrollable inner sections */
+.side-scroll { flex: 1; overflow-y: auto; }
+
+/* ═══ CHAT PANEL ════════════════════════════════════════════════════════ */
+.chat-panel {
+  display: flex; flex-direction: column;
+  background: var(--s0); overflow: hidden;
+}
+.chat-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 20px 9px; border-bottom: 1px solid var(--e1);
+  background: var(--s1); flex-shrink: 0;
+}
+.chat-session {
+  font-family: var(--mono); font-size: 10px; color: var(--t3); letter-spacing: .05em;
+}
+.chat-task-mini {
+  font-size: 11px; color: var(--t3); font-style: italic;
+  max-width: 420px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+.msgs {
+  flex: 1; overflow-y: auto; padding: 18px 22px;
+  display: flex; flex-direction: column; gap: 14px;
+}
+
+/* Message */
+.msg { display: flex; gap: 11px; animation: fadeUp .22s ease forwards; opacity: 0; }
+@keyframes fadeUp { from { opacity:0; transform:translateY(5px); } to { opacity:1; transform:none; } }
+.msg-av {
+  width: 30px; height: 30px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--mono); font-size: 10px; font-weight: 600; flex-shrink: 0; margin-top: 1px;
+}
+.msg-body { flex: 1; min-width: 0; }
+.msg-meta { display: flex; align-items: baseline; gap: 9px; margin-bottom: 3px; }
+.msg-name { font-size: 12px; font-weight: 600; }
+.msg-time { font-family: var(--mono); font-size: 10px; color: var(--t4); }
+.msg-text { font-size: 13px; color: var(--t2); line-height: 1.62; }
+
+/* Scaffold card */
+.scaffold-outer { animation: fadeUp .28s ease forwards; opacity: 0; }
+.scaffold-card {
+  background: var(--s2); border: 1px solid var(--e1);
+  border-left: 3px solid; border-radius: var(--radius-lg);
+  padding: 13px 15px; margin: 2px 0;
+}
+.scaffold-card.l1  { border-left-color: var(--sky); }
+.scaffold-card.l2  { border-left-color: var(--amber); }
+.scaffold-card.l3  { border-left-color: var(--rose); }
+.scaffold-card.pause { border-left-color: var(--rose); background: rgba(240,86,114,.04); }
+.scaffold-card.part  { border-left-color: var(--violet); }
+
+.sc-head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+.sc-badge {
+  font-family: var(--mono); font-size: 9px; font-weight: 500;
+  padding: 3px 8px; border-radius: 3px; letter-spacing: .05em; white-space: nowrap;
+}
+.sc-badge.l1   { background: var(--sky-bg); color: var(--sky); border: 1px solid var(--sky-bd); }
+.sc-badge.l2   { background: var(--amber-bg); color: var(--amber); border: 1px solid var(--amber-bd); }
+.sc-badge.l3   { background: var(--rose-bg); color: var(--rose); border: 1px solid var(--rose-bd); }
+.sc-badge.pause{ background: var(--rose-bg); color: var(--rose); border: 1px solid var(--rose-bd); }
+.sc-badge.part { background: var(--violet-bg); color: var(--violet); border: 1px solid var(--violet-bd); }
+
+.sc-trigger { font-family: var(--mono); font-size: 10px; color: var(--t4); }
+.sc-text { font-size: 13px; color: var(--t2); line-height: 1.65; }
+.sc-footer { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+.dismiss-btn {
+  font-family: var(--sans); font-size: 11px; color: var(--t3);
+  background: none; border: 1px solid var(--e2); border-radius: 4px;
+  padding: 3px 10px; cursor: pointer; transition: all .15s;
+}
+.dismiss-btn:hover { background: var(--s3); color: var(--t1); }
+.dismiss-btn.dismissed { opacity: .35; pointer-events: none; }
+.sc-agency { font-family: var(--mono); font-size: 9px; color: var(--t4); }
+
+/* Typing */
+.typing-row {
+  display: flex; gap: 11px; align-items: center;
+  opacity: .65; animation: fadeUp .2s ease forwards;
+}
+.t-dots { display: flex; gap: 3px; }
+.t-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--t4); animation: td 1.2s infinite; }
+.t-dot:nth-child(2) { animation-delay: .2s; }
+.t-dot:nth-child(3) { animation-delay: .4s; }
+@keyframes td { 0%,60%,100% { transform:translateY(0); } 30% { transform:translateY(-4px); } }
+
+/* Thinking */
+.thinking-row {
+  display: flex; align-items: center; gap: 8px;
+  font-family: var(--mono); font-size: 10px; color: var(--t4);
+  padding: 4px 0; animation: fadeUp .2s ease forwards; opacity: 0;
+}
+.spin {
+  width: 10px; height: 10px;
+  border: 1.5px solid var(--e2); border-top-color: var(--teal);
+  border-radius: 50%; animation: spin .7s linear infinite; flex-shrink: 0;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Input */
+.input-zone {
+  padding: 13px 22px; border-top: 1px solid var(--e1);
+  background: var(--s1); flex-shrink: 0;
+}
+.input-row { display: flex; gap: 9px; align-items: flex-end; }
+.chat-input {
+  flex: 1; background: var(--s2); border: 1px solid var(--e2);
+  border-radius: var(--radius); padding: 9px 14px; color: var(--t1);
+  font-family: var(--sans); font-size: 13px; resize: none;
+  outline: none; transition: border-color .2s; min-height: 40px; max-height: 110px;
+  line-height: 1.5;
+}
+.chat-input:focus { border-color: var(--teal-d); }
+.chat-input::placeholder { color: var(--t4); }
+.send-btn {
+  background: var(--teal-d); color: #fff; border: none;
+  border-radius: var(--radius); padding: 9px 20px;
+  font-family: var(--sans); font-size: 13px; font-weight: 500;
+  cursor: pointer; transition: all .15s; white-space: nowrap; flex-shrink: 0;
+}
+.send-btn:hover { background: var(--teal); transform: translateY(-1px); box-shadow: var(--glow-teal); }
+.send-btn:active { transform: none; }
+.send-btn:disabled { background: var(--s4); color: var(--t4); cursor: not-allowed; transform: none; box-shadow: none; }
+.input-meta {
+  display: flex; justify-content: space-between; margin-top: 6px;
+  font-size: 11px; color: var(--t4);
+}
+.char-ct { font-family: var(--mono); }
+
+/* ═══ RIGHT SIDEBAR ══════════════════════════════════════════════════════ */
+/* ZPD */
+.zpd-wrap { padding: 12px 14px; border-bottom: 1px solid var(--e1); }
+.zpd-bar-bg {
+  height: 8px; background: var(--s3); border-radius: 4px;
+  overflow: hidden; margin: 8px 0 5px;
+}
+.zpd-bar-fill { height: 100%; border-radius: 4px; transition: width .9s ease, background .5s; }
+.zpd-zones { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 9px; color: var(--t4); }
+.zpd-status {
+  font-family: var(--mono); font-size: 10px; margin-top: 7px; padding: 4px 9px;
+  border-radius: 4px; background: var(--s3); border: 1px solid var(--e1); color: var(--t3);
+}
+
+/* Log */
+.log-wrap { flex: 1; overflow-y: auto; padding: 10px 14px; min-height: 0; }
+.log-entry { display: flex; gap: 7px; margin-bottom: 6px; font-size: 10px; line-height: 1.45; }
+.log-ts { font-family: var(--mono); color: var(--t4); flex-shrink: 0; padding-top: 1px; }
+.log-m { color: var(--t3); }
+.log-m.ev { color: var(--teal); }
+.log-m.warn { color: var(--amber); }
+.log-m.danger { color: var(--rose); }
+.log-m.info { color: var(--sky); }
+.log-m.violet { color: var(--violet); }
+
+/* Pipeline step indicator */
+.pipeline { padding: 10px 14px; border-top: 1px solid var(--e1); }
+.pipe-lbl { font-family: var(--mono); font-size: 9px; color: var(--t4); letter-spacing: .08em; text-transform: uppercase; margin-bottom: 8px; }
+.pipe-steps { display: flex; flex-direction: column; gap: 3px; }
+.pipe-step {
+  display: flex; align-items: center; gap: 7px;
+  font-family: var(--mono); font-size: 9px; color: var(--t4);
+  padding: 3px 0; transition: all .2s;
+}
+.pipe-step.active { color: var(--teal); }
+.pipe-step.done   { color: var(--t3); }
+.pipe-n {
+  width: 16px; height: 16px; border-radius: 3px; display: flex; align-items: center; justify-content: center;
+  background: var(--s3); border: 1px solid var(--e1); font-size: 9px; flex-shrink: 0; transition: all .2s;
+}
+.pipe-step.active .pipe-n { background: var(--teal-bg); border-color: var(--teal-bd); color: var(--teal); }
+.pipe-step.done   .pipe-n { background: var(--s4); color: var(--t4); }
+
+/* Demo controls */
+.ctrl-wrap { padding: 10px 14px; border-top: 1px solid var(--e1); }
+.ctrl-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+.ctrl-btn {
+  font-family: var(--mono); font-size: 10px; background: var(--s2);
+  border: 1px solid var(--e1); color: var(--t3); padding: 6px 8px;
+  border-radius: var(--radius); cursor: pointer; transition: all .15s; text-align: center;
+}
+.ctrl-btn:hover { background: var(--s3); color: var(--t1); border-color: var(--e2); }
+.ctrl-btn:active { transform: scale(.97); }
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ══ TOPBAR ══════════════════════════════════════════════════════════ -->
+<div class="topbar">
+  <div class="tb-brand">
+    <div class="tb-logo">ASS</div>
+    <div class="tb-version">v1.0-proto</div>
+  </div>
+  <div class="tb-center">
+    <div class="tb-stat">
+      <div class="tb-dot" id="fd-dot" style="background:var(--rose)" title="Fading state"></div>
+      <span>fading:</span>
+      <span class="tb-val" id="fd-lbl">FULL_SCAFFOLD</span>
+    </div>
+    <div class="tb-stat">
+      <div class="tb-dot" style="background:var(--sky)"></div>
+      <span>zpd_gap:</span>
+      <span class="tb-val" id="zpd-top">0.70</span>
+    </div>
+    <div class="tb-stat">
+      <div class="tb-dot" style="background:var(--rose)"></div>
+      <span>dep_risk:</span>
+      <span class="tb-val" id="dep-top">0.0%</span>
+    </div>
+  </div>
+  <div class="tb-right">
+    <div class="tb-badge" id="int-badge">0 interventions</div>
+    <div class="tb-badge" style="color:var(--teal)">claude-sonnet-4-20250514</div>
+  </div>
+</div>
+
+<!-- ══ LEFT SIDEBAR ══════════════════════════════════════════════════════ -->
+<div class="sidebar-left">
+  <div class="sec-lbl">Task Context <div class="sec-lbl-dot"></div></div>
+  <div class="sec-body">
+    <div class="task-card">
+      <div class="task-chip">// ACTIVE_TASK</div>
+      <div class="task-title">AI in Medical Diagnosis</div>
+      <div class="task-desc">Analyse the trade-offs between supervised and unsupervised learning for a clinical medical diagnosis system. Consider accuracy, interpretability, data requirements, and ethical implications.</div>
+    </div>
+  </div>
+
+  <div class="side-scroll">
+    <div class="sec-lbl">Participation Monitor</div>
+    <div class="sec-body" id="p-panel"></div>
+
+    <div class="sec-lbl">Fading Lifecycle — 4 States</div>
+    <div class="sec-body">
+      <div class="fading-list">
+        <div class="fading-item active" id="fi-full">
+          <div class="fading-icon" style="background:var(--rose)"></div>
+          <span class="fading-name active">FULL_SCAFFOLD</span>
+          <span class="fading-sub">L1+L2+L3</span>
+        </div>
+        <div class="fading-item" id="fi-reduced">
+          <div class="fading-icon" style="background:var(--amber)"></div>
+          <span class="fading-name">REDUCED</span>
+          <span class="fading-sub">L1+L2</span>
+        </div>
+        <div class="fading-item" id="fi-minimal">
+          <div class="fading-icon" style="background:var(--sky)"></div>
+          <span class="fading-name">MINIMAL</span>
+          <span class="fading-sub">L1 only</span>
+        </div>
+        <div class="fading-item" id="fi-fade">
+          <div class="fading-icon" style="background:var(--teal)"></div>
+          <span class="fading-name">FULL_FADE</span>
+          <span class="fading-sub">observer</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="sec-lbl">Session Metrics</div>
+    <div class="sec-body">
+      <div class="metric-grid">
+        <div class="metric"><div class="metric-val" id="m-msg" style="color:var(--sky)">0</div><div class="metric-lbl">messages</div></div>
+        <div class="metric"><div class="metric-val" id="m-scaf" style="color:var(--amber)">0</div><div class="metric-lbl">scaffolds</div></div>
+        <div class="metric"><div class="metric-val" id="m-peer" style="color:var(--teal)">0</div><div class="metric-lbl">peer replies</div></div>
+        <div class="metric"><div class="metric-val" id="m-dep" style="color:var(--rose)">0%</div><div class="metric-lbl">dep. risk</div></div>
+      </div>
+    </div>
+
+    <div class="sec-lbl">config.py (active)</div>
+    <div class="sec-body">
+      <div class="cfg-row"><span class="cfg-lbl">stagnation_threshold</span><span class="cfg-val">0.85</span></div>
+      <div class="cfg-row"><span class="cfg-lbl">min_wait_l1</span><span class="cfg-val">120 s</span></div>
+      <div class="cfg-row"><span class="cfg-lbl">progress_to_advance</span><span class="cfg-val">5 sessions</span></div>
+      <div class="cfg-row"><span class="cfg-lbl">dep_pause_seconds</span><span class="cfg-val">300 s</span></div>
+      <div class="cfg-row"><span class="cfg-lbl">under_participation</span><span class="cfg-val">&lt; 15%</span></div>
+      <div class="cfg-row"><span class="cfg-lbl">over_participation</span><span class="cfg-val">&gt; 250%</span></div>
+      <div class="cfg-row"><span class="cfg-lbl">dep_indicators_thresh</span><span class="cfg-val">2 flags</span></div>
+      <div class="cfg-row"><span class="cfg-lbl">rapid_requeue_window</span><span class="cfg-val">60 s</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ CHAT PANEL ══════════════════════════════════════════════════════════ -->
+<div class="chat-panel">
+  <div class="chat-header">
+    <span class="chat-session" id="sess-ts">SESSION · 00:00</span>
+    <span class="chat-task-mini">AI in Medical Diagnosis — supervised vs. unsupervised trade-off analysis</span>
+  </div>
+  <div class="msgs" id="msgs"></div>
+  <div class="input-zone">
+    <div class="input-row">
+      <textarea class="chat-input" id="ci" placeholder="Contribute to the group discussion…" rows="1" maxlength="600"></textarea>
+      <button class="send-btn" id="send-btn" onclick="send()">Send ↵</button>
+    </div>
+    <div class="input-meta">
+      <span>You are <strong style="color:var(--teal)">You</strong> · Enter to send · Shift+Enter for new line</span>
+      <span class="char-ct" id="cc">0 / 600</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══ RIGHT SIDEBAR ══════════════════════════════════════════════════════ -->
+<div class="sidebar-right">
+  <div class="sec-lbl">ZPD Gap Estimator <div class="sec-lbl-dot"></div></div>
+  <div class="zpd-wrap">
+    <div style="font-family:var(--mono);font-size:9px;color:var(--t4)">gap_score: <span id="zpd-score" style="color:var(--t2)">0.70</span> · trigger: <span id="zpd-trig" style="color:var(--rose)">false</span></div>
+    <div class="zpd-bar-bg"><div class="zpd-bar-fill" id="zpd-fill" style="width:70%;background:var(--rose)"></div></div>
+    <div class="zpd-zones"><span>no_gap</span><span>zpd_zone</span><span>beyond</span></div>
+    <div class="zpd-status" id="zpd-status">High gap — scaffolding active</div>
+  </div>
+
+  <div class="sec-lbl">12-Step Decision Cycle</div>
+  <div class="pipeline">
+    <div class="pipe-steps" id="pipeline">
+      <div class="pipe-step" id="ps1"><div class="pipe-n">1</div>receive_message()</div>
+      <div class="pipe-step" id="ps2"><div class="pipe-n">2</div>dialogue_analysis.process()</div>
+      <div class="pipe-step" id="ps3"><div class="pipe-n">3</div>participation.check_imbalance()</div>
+      <div class="pipe-step" id="ps4"><div class="pipe-n">4</div>→ participation_intervention?</div>
+      <div class="pipe-step" id="ps5"><div class="pipe-n">5</div>fading.is_paused()?</div>
+      <div class="pipe-step" id="ps6"><div class="pipe-n">6</div>zpd_estimator.estimate()</div>
+      <div class="pipe-step" id="ps7"><div class="pipe-n">7</div>→ select_scaffold_level()</div>
+      <div class="pipe-step" id="ps8"><div class="pipe-n">8</div>scaffolding_engine.generate()</div>
+      <div class="pipe-step" id="ps9"><div class="pipe-n">9</div>fading.check_dependency()</div>
+      <div class="pipe-step" id="ps10"><div class="pipe-n">10</div>ws.push(scaffold_event)</div>
+      <div class="pipe-step" id="ps11"><div class="pipe-n">11</div>fading.record_progress()</div>
+      <div class="pipe-step" id="ps12"><div class="pipe-n">12</div>zpd_estimator.update()</div>
+    </div>
+  </div>
+
+  <div class="sec-lbl">System Log</div>
+  <div class="log-wrap" id="sys-log"></div>
+
+  <div class="ctrl-wrap">
+    <div class="pipe-lbl" style="margin-bottom:6px">Demo Controls</div>
+    <div class="ctrl-grid">
+      <button class="ctrl-btn" onclick="simDom()">Alex dominates</button>
+      <button class="ctrl-btn" onclick="simSilent()">Sam silent</button>
+      <button class="ctrl-btn" onclick="simStag()">Stagnation</button>
+      <button class="ctrl-btn" onclick="forceL1()">Force L1</button>
+      <button class="ctrl-btn" onclick="forceL2()">Force L2</button>
+      <button class="ctrl-btn" onclick="forceL3()">Force L3</button>
+      <button class="ctrl-btn" onclick="advFade()">Advance fading</button>
+      <button class="ctrl-btn" onclick="resetSess()">Reset</button>
+    </div>
+  </div>
+</div>
+
+</div><!-- /app -->
+
+<script>
+// ═══ CONFIG (mirrors config.py from Ch.4) ════════════════════════════════
+const CFG = {
+  stagnation_threshold:      0.85,
+  topic_relevance_floor:     0.30,
+  min_wait_l1_seconds:       120,
+  min_wait_l2_exchanges:     3,
+  min_wait_l3_exchanges:     3,
+  progress_sessions_advance: 5,
+  dep_pause_seconds:         300,
+  rapid_requeue_window:      60,
+  dep_indicators_threshold:  2,
+  under_pct:                 0.15,
+  over_pct:                  2.50,
+  min_messages:              10,
+  cooldown_msgs:             5,
+  zpd_window:                5,
+};
+
+// ═══ PARTICIPANTS ════════════════════════════════════════════════════════
+const PARTICIPANTS = [
+  { id:'you',  name:'You',  init:'YO', color:'var(--teal)',   bg:'rgba(0,212,170,.12)' },
+  { id:'alex', name:'Alex', init:'AL', color:'var(--sky)',    bg:'rgba(77,184,240,.12)' },
+  { id:'sam',  name:'Sam',  init:'SM', color:'var(--violet)', bg:'rgba(155,126,248,.12)' },
+];
+
+const ALEX = [
+  "Supervised learning is clearly superior — hospitals have massive labeled datasets. CNNs achieve 95%+ accuracy on image diagnostics. This is settled science.",
+  "The FDA explicitly requires reproducible accuracy benchmarks for medical AI. That regulatory reality favours supervised approaches by design.",
+  "Transfer learning from ImageNet pre-trained models drastically reduces data requirements. The labeled data problem is largely solved for common conditions.",
+  "Ensemble methods combining supervised classifiers are what's actually being deployed in major hospital systems right now. This isn't theoretical.",
+  "Interpretability concerns are valid but secondary when the alternative is misdiagnosis. A model that's 95% accurate but opaque beats a 70% accurate explainable one.",
+  "ResNet and EfficientNet architectures trained on clinical datasets demonstrate that supervised learning scales to the medical domain effectively.",
+];
+const SAM = [
+  "Wait — I'm not sure I understand. What does unsupervised learning actually do in a medical context? Can clustering really be used for diagnosis?",
+  "What about rare diseases where almost no labeled data exists? Would a supervised model completely fail for a condition it has never seen?",
+  "If the training data underrepresents certain demographics, doesn't supervised learning just amplify those historical biases?",
+  "I've read about clustering being used to discover new disease subtypes that doctors hadn't categorised before. That seems important?",
+  "Doctors have to explain diagnostic decisions to patients and regulators. Does interpretability matter more than accuracy in a clinical context?",
+  "I think Alex has good points, but the ethical dimension worries me. An accurate model that discriminates might cause more harm than a less accurate fair one.",
+];
+
+// ═══ STATE (mirrors Session dataclass) ════════════════════════════════════
+let S = {
+  messages: [], counts: { you:0, alex:0, sam:0 }, total: 0,
+  scaffolds: 0, peers: 0, dep_risk: 0.0,
+  fading: 'full', progress_counter: 0,
+  last_scaffold_ts: null, last_user_ts: null,
+  scaffold_log: [],        // timestamps
+  peer_rates: [],          // rolling peer rates
+  paused_until: 0,
+  zpd_gap: 0.70, zpd_trigger: false,
+  cooldown: 0,
+  session_start: Date.now(),
+};
+
+// ═══ HELPERS ═════════════════════════════════════════════════════════════
+const $  = id => document.getElementById(id);
+const esc = t => String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const sleep = ms => new Promise(r=>setTimeout(r,ms));
+const ts = () => {
+  const e = Math.floor((Date.now()-S.session_start)/1000);
+  return `${String(Math.floor(e/60)).padStart(2,'0')}:${String(e%60).padStart(2,'0')}`;
+};
+
+// Session clock
+setInterval(()=>{ $('sess-ts').textContent=`SESSION · ${ts()}`; }, 1000);
+
+// ═══ SYSTEM LOG ══════════════════════════════════════════════════════════
+function sysLog(msg, type='') {
+  const box = $('sys-log');
+  const d = document.createElement('div'); d.className = 'log-entry';
+  d.innerHTML = `<span class="log-ts">${ts()}</span><span class="log-m ${type}">${esc(msg)}</span>`;
+  box.appendChild(d); box.scrollTop = box.scrollHeight;
+}
+
+// ═══ PIPELINE ANIMATOR ═══════════════════════════════════════════════════
+let pipeTimer = null;
+async function animatePipeline(steps) {
+  // Reset all
+  for(let i=1;i<=12;i++) {
+    const el=$(`ps${i}`);
+    el.classList.remove('active','done');
+  }
+  for(const i of steps) {
+    const el=$(`ps${i}`);
+    if(el) {
+      // mark previous done
+      for(let j=1;j<i;j++) {
+        const p=$(`ps${j}`);
+        if(p.classList.contains('active')) p.classList.replace('active','done');
+      }
+      el.classList.add('active');
+      await sleep(180);
+    }
+  }
+  // finish all done
+  await sleep(400);
+  for(let i=1;i<=12;i++) {
+    const el=$(`ps${i}`);
+    el.classList.remove('active');
+    if(steps.includes(i)) el.classList.add('done');
+  }
+  // fade out after delay
+  setTimeout(()=>{
+    for(let i=1;i<=12;i++) $(`ps${i}`).classList.remove('done');
+  }, 3000);
+}
+
+// ═══ ZPD ESTIMATOR ═══════════════════════════════════════════════════════
+// client-side approximation (mirrors zpd_estimator.py)
+function semanticSimilarity(t1, t2) {
+  const kw = ['supervised','unsupervised','accuracy','data','label','model','neural',
+              'training','interpretability','bias','diagnosis','clinical','patient',
+              'algorithm','classification','clustering','feature','prediction'];
+  const words1 = new Set(kw.filter(k => t1.toLowerCase().includes(k)));
+  const words2 = new Set(kw.filter(k => t2.toLowerCase().includes(k)));
+  const inter = [...words1].filter(w => words2.has(w)).length;
+  const union = new Set([...words1,...words2]).size;
+  return union > 0 ? inter/union : 0;
+}
+function countReasoning(text) {
+  const markers = ['because','therefore','however','since','thus','hence',
+                   'as a result','consequently','although','whereas'];
+  return markers.filter(m => text.toLowerCase().includes(m)).length;
+}
+function estimateZPD() {
+  const win = S.messages.slice(-CFG.zpd_window);
+  if(win.length < 3) return { gap: S.zpd_gap, trigger: false, reason:'insufficient_data' };
+
+  let avgSim=0, avgReasoning=0;
+  for(let i=1;i<win.length;i++) {
+    avgSim += semanticSimilarity(win[i].text, win[i-1].text);
+    avgReasoning += countReasoning(win[i].text);
+  }
+  avgSim /= (win.length-1);
+  avgReasoning /= (win.length-1);
+
+  const stagnation = avgSim > CFG.stagnation_threshold;
+  const lowReasoning = avgReasoning < 1;
+  const waitOk = !S.last_scaffold_ts || (Date.now()-S.last_scaffold_ts)/1000 >= CFG.min_wait_l1_seconds;
+
+  if(stagnation && lowReasoning) {
+    S.zpd_gap = Math.min(0.95, S.zpd_gap + 0.07);
+  } else if(!stagnation && avgReasoning > 1.5) {
+    S.zpd_gap = Math.max(0.05, S.zpd_gap - 0.09);
+    S.progress_counter++;
+    if(S.progress_counter >= CFG.progress_sessions_advance) advFadeInternal();
+  }
+
+  return {
+    gap: S.zpd_gap,
+    trigger: stagnation && waitOk,
+    reason: stagnation ? 'stagnation' : 'none',
+    avg_similarity: avgSim,
+  };
+}
+
+// ═══ FADING CONTROLLER ═══════════════════════════════════════════════════
+const FADING_STATES = ['full','reduced','minimal','fade'];
+const FADING_COLORS = { full:'var(--rose)', reduced:'var(--amber)', minimal:'var(--sky)', fade:'var(--teal)' };
+const FADING_LABELS = { full:'FULL_SCAFFOLD', reduced:'REDUCED', minimal:'MINIMAL', fade:'FULL_FADE' };
+
+function isLevelAvailable(level) {
+  if(isPaused()) return false;
+  if(S.fading==='fade') return false;
+  if(S.fading==='minimal') return level==='l1';
+  if(S.fading==='reduced') return level==='l1'||level==='l2';
+  return true;
+}
+function isPaused() { return Date.now() < S.paused_until; }
+
+function checkDependency() {
+  const now = Date.now();
+  let flags = 0;
+  // Indicator 1: rapid requeue
+  if(S.scaffold_log.length && (now-S.scaffold_log[S.scaffold_log.length-1])/1000 < CFG.rapid_requeue_window) {
+    flags++;
+    sysLog('Dep indicator 1: rapid_requeue detected','warn');
+  }
+  // Indicator 2: declining peer rate
+  const peerRate = S.total > 0 ? S.peers/S.total : 0;
+  S.peer_rates.push(peerRate);
+  if(S.peer_rates.length>=3) {
+    const recent = S.peer_rates.slice(-3);
+    const avg = recent.reduce((a,b)=>a+b,0)/3;
+    if(peerRate < avg-0.1) { flags++; sysLog('Dep indicator 2: declining_peer_rate','warn'); }
+  }
+  // Indicator 3: passive (low peer rate)
+  if(peerRate < 0.15 && S.total > 5) { flags++; sysLog('Dep indicator 3: passive_waiting','warn'); }
+
+  if(flags >= CFG.dep_indicators_threshold) {
+    S.paused_until = now + CFG.dep_pause_seconds*1000;
+    S.dep_risk = Math.min(100, S.dep_risk + 22);
+    sysLog(`Dependency pause activated — ${flags} indicators fired`,'danger');
+    return true;
+  }
+  S.dep_risk = Math.min(100, S.dep_risk + 7);
+  return false;
+}
+
+function advFadeInternal() {
+  const idx = FADING_STATES.indexOf(S.fading);
+  if(idx < FADING_STATES.length-1) {
+    S.fading = FADING_STATES[idx+1];
+    S.progress_counter = 0;
+    S.zpd_gap = Math.max(0.05, S.zpd_gap - 0.2);
+    renderFading(); updateMetrics();
+    sysLog(`fading_controller: state → ${FADING_LABELS[S.fading]}`,'ev');
+    if(S.fading==='fade') sysLog('AI returns to silent observer mode','ev');
+  }
+}
+
+// ═══ PARTICIPATION BALANCER ═══════════════════════════════════════════════
+function checkParticipation() {
+  if(S.total < CFG.min_messages) return null;
+  if(S.cooldown > 0) { S.cooldown--; return null; }
+  const expected = S.total / PARTICIPANTS.length;
+  for(const p of PARTICIPANTS) {
+    const c = S.counts[p.id]||0;
+    const ratio = c/expected;
+    if(p.id==='you') continue;
+    if(ratio < CFG.under_pct) {
+      S.cooldown = CFG.cooldown_msgs;
+      sysLog(`Underparticipation: ${p.name} ratio=${ratio.toFixed(2)}`,'violet');
+      return { type:'underparticipation', pid:p.id, name:p.name, ratio };
+    }
+    if(ratio > CFG.over_pct) {
+      S.cooldown = CFG.cooldown_msgs;
+      sysLog(`Overparticipation: ${p.name} ratio=${ratio.toFixed(2)}`,'violet');
+      return { type:'overparticipation', pid:p.id, name:p.name, ratio };
+    }
+  }
+  return null;
+}
+
+// ═══ LLM API ══════════════════════════════════════════════════════════════
+const SYSTEM_PROMPTS = {
+  l1:`You are an AI adaptive scaffolding system for collaborative learning.
+Generate a MINIMAL Level 1 scaffold. Rules:
+- NEVER give the answer or direct solution
+- Ask ONE open-ended Socratic question (max 2 sentences)
+- Point toward an insight the group is missing
+- Use framing like: 'Have you considered…', 'What might happen if…'
+Task: Analyse trade-offs between supervised and unsupervised learning for clinical medical diagnosis. Consider accuracy, interpretability, data needs, and ethics.`,
+
+  l2:`You are an AI adaptive scaffolding system.
+Generate a Level 2 guided scaffold. Rules:
+- NEVER give the answer
+- Provide ONE specific conceptual direction (max 3 sentences)
+- Frame as: 'Think about the relationship between X and Y…'
+- More specific than L1 but still Socratic
+Task: Analyse trade-offs between supervised and unsupervised learning for clinical medical diagnosis. Consider accuracy, interpretability, data needs, and ethics.`,
+
+  l3:`You are an AI adaptive scaffolding system.
+Generate a Level 3 scaffold with a concrete worked example or analogy. Rules:
+- NEVER solve the task directly
+- Illustrate ONE concept with a real-world analogy (max 4 sentences)
+- The analogy should illuminate, not resolve, the problem
+Task: Analyse trade-offs between supervised and unsupervised learning for clinical medical diagnosis. Consider accuracy, interpretability, data needs, and ethics.`,
+
+  meta:`You are an AI adaptive scaffolding system with an anti-dependency module active.
+Generate a short metacognitive prompt (2 sentences max) that:
+- Encourages the learner to try engaging with their peers first
+- Does NOT provide any scaffolding content or hints
+- Is supportive, not punitive
+- Explains why the AI is stepping back temporarily`,
+};
+
+const FALLBACKS = {
+  l1: "Your group has been exploring similar angles. Have you considered what would happen to your chosen approach when the model encounters a disease it has never seen in training data?",
+  l2: "Think about the relationship between labeled data availability and model performance. How might your recommendation change for a condition with only 50 documented cases versus one with 500,000?",
+  l3: "Consider a spam filter analogy: a supervised filter trained on known spam is highly accurate for familiar patterns, but completely blind to novel phishing attempts. An unsupervised approach might detect the new attack by noticing it clusters differently from normal email. How might this parallel apply to diagnosing a novel pathogen?",
+  meta: "You've reached out for support several times in quick succession. Try working through this with your group for a few minutes — the discussion you have together is where the real learning happens. I'll step back briefly and check in again shortly.",
+};
+
+async function callLLM(level, context) {
+  const recent = S.messages.slice(-10).map(m=>`${m.pid}: ${m.text}`).join('\n');
+  const userMsg = `Recent conversation:\n${recent}\n\nContext: ${context}\n\nGenerate the scaffold now.`;
+  try {
+    const r = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514', max_tokens:300,
+        system: SYSTEM_PROMPTS[level]||SYSTEM_PROMPTS.l1,
+        messages:[{role:'user',content:userMsg}]
+      })
+    });
+    const d = await r.json();
+    const text = d.content?.[0]?.text||'';
+    // Anti-answer filter (mirrors _contains_direct_answer)
+    const banned = ['the answer is','you should use','the solution is',
+                    'supervised is better','unsupervised is better',
+                    'i recommend','the best choice is'];
+    if(banned.some(b=>text.toLowerCase().includes(b))) {
+      sysLog('Anti-answer filter: output rejected → fallback','warn');
+      return FALLBACKS[level];
+    }
+    return text;
+  } catch(e) {
+    sysLog('API unavailable → fallback scaffold','warn');
+    return FALLBACKS[level];
+  }
+}
+
+// ═══ RENDER ═══════════════════════════════════════════════════════════════
+function renderParticipation() {
+  const tot = S.total || 1;
+  const exp = tot / PARTICIPANTS.length;
+  $('p-panel').innerHTML = PARTICIPANTS.map(p => {
+    const c = S.counts[p.id]||0;
+    const pct = Math.round(c/tot*100);
+    const ratio = c/exp;
+    const over = ratio>CFG.over_pct, under = ratio<CFG.under_pct && S.total>=CFG.min_messages;
+    const barC = over?'var(--amber)':under?'var(--rose)':'var(--teal)';
+    const badge = over
+      ? `<span class="p-badge" style="background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-bd)">dominant</span>`
+      : under
+      ? `<span class="p-badge" style="background:var(--rose-bg);color:var(--rose);border:1px solid var(--rose-bd)">quiet</span>`
+      : '';
+    return `<div class="p-row">
+      <div class="av" style="background:${p.bg};color:${p.color}">${p.init}</div>
+      <div class="p-info">
+        <div class="p-top">
+          <span class="p-name" style="color:${p.color}">${p.name}</span>
+          <div style="display:flex;align-items:center;gap:5px">${badge}<span class="p-pct">${pct}%</span></div>
+        </div>
+        <div class="bar"><div class="bar-fill" style="width:${Math.min(pct,100)}%;background:${barC}"></div></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderFading() {
+  ['full','reduced','minimal','fade'].forEach(st=>{
+    const el=$(`fi-${st}`), nm=el.querySelector('.fading-name');
+    el.classList.toggle('active', st===S.fading);
+    nm.classList.toggle('active', st===S.fading);
+  });
+  $('fd-dot').style.background = FADING_COLORS[S.fading];
+  $('fd-lbl').textContent = FADING_LABELS[S.fading];
+}
+
+function updateMetrics() {
+  $('m-msg').textContent  = S.total;
+  $('m-scaf').textContent = S.scaffolds;
+  $('m-peer').textContent = S.peers;
+  $('m-dep').textContent  = Math.round(S.dep_risk)+'%';
+  $('dep-top').textContent= Math.round(S.dep_risk)+'%';
+  $('int-badge').textContent = `${S.scaffolds} intervention${S.scaffolds!==1?'s':''}`;
+  updateZPD();
+}
+
+function updateZPD() {
+  const fill=$('zpd-fill'), stat=$('zpd-status');
+  const pct=Math.round(S.zpd_gap*100);
+  $('zpd-top').textContent=S.zpd_gap.toFixed(2);
+  $('zpd-score').textContent=S.zpd_gap.toFixed(2);
+  $('zpd-trig').textContent=S.zpd_trigger?'TRUE':'false';
+  $('zpd-trig').style.color=S.zpd_trigger?'var(--rose)':'var(--t4)';
+  fill.style.width=pct+'%';
+  if(pct>65){fill.style.background='var(--rose)';stat.textContent='High gap — scaffolding active';}
+  else if(pct>35){fill.style.background='var(--amber)';stat.textContent='Moderate gap — monitoring';}
+  else{fill.style.background='var(--teal)';stat.textContent='Low gap — approaching FULL_FADE';}
+}
+
+// ═══ MESSAGE RENDERING ════════════════════════════════════════════════════
+function addMsg(pid, text) {
+  const p = PARTICIPANTS.find(x=>x.id===pid);
+  const box = $('msgs');
+  const d = document.createElement('div'); d.className='msg';
+  d.innerHTML=`
+    <div class="msg-av" style="background:${p.bg};color:${p.color}">${p.init}</div>
+    <div class="msg-body">
+      <div class="msg-meta">
+        <span class="msg-name" style="color:${p.color}">${p.name}</span>
+        <span class="msg-time">${ts()}</span>
+      </div>
+      <div class="msg-text">${esc(text)}</div>
+    </div>`;
+  box.appendChild(d); box.scrollTop=box.scrollHeight;
+
+  S.messages.push({pid,text,time:Date.now()});
+  S.counts[pid]=(S.counts[pid]||0)+1;
+  S.total++;
+  if(pid!=='you') S.peers++;
+  if(pid==='you') S.last_user_ts=Date.now();
+
+  renderParticipation(); updateMetrics();
+  if(pid==='you') runDecisionCycle();
+}
+
+function addScaffold(level, trigger, text, type='') {
+  const LABELS={l1:'L1 · Minimal Scaffold',l2:'L2 · Guided Question',l3:'L3 · Worked Example',
+    pause:'Dependency Alert — Scaffold Paused',part:'Participation Alert'};
+  const lv=type||level;
+  const box=$('msgs');
+  const d=document.createElement('div'); d.className='scaffold-outer';
+  d.innerHTML=`<div class="scaffold-card ${lv}">
+    <div class="sc-head">
+      <span class="sc-badge ${lv}">${LABELS[lv]||'Scaffold'}</span>
+      <span class="sc-trigger">${esc(trigger)}</span>
+    </div>
+    <div class="sc-text">${esc(text)}</div>
+    <div class="sc-footer">
+      <button class="dismiss-btn" onclick="this.textContent='Dismissed';this.classList.add('dismissed')">Dismiss</button>
+      <span class="sc-agency">// learner_agency preserved</span>
+    </div>
+  </div>`;
+  box.appendChild(d); box.scrollTop=box.scrollHeight;
+
+  S.scaffolds++; S.scaffold_log.push(Date.now()); S.last_scaffold_ts=Date.now();
+  updateMetrics();
+  sysLog(`ws.push(scaffold_event: ${LABELS[lv]})`, 'info');
+}
+
+function showTyping(pid) {
+  const p=PARTICIPANTS.find(x=>x.id===pid);
+  rmTyping();
+  const box=$('msgs');
+  const d=document.createElement('div'); d.id='typing'; d.className='typing-row';
+  d.innerHTML=`<div class="msg-av" style="background:${p.bg};color:${p.color};font-family:var(--mono);font-size:10px;font-weight:600">${p.init}</div>
+    <div><div style="font-size:11px;color:${p.color};margin-bottom:3px">${p.name}</div>
+    <div class="t-dots"><div class="t-dot"></div><div class="t-dot"></div><div class="t-dot"></div></div></div>`;
+  box.appendChild(d); box.scrollTop=box.scrollHeight;
+}
+function rmTyping(){const e=document.getElementById('typing');if(e)e.remove();}
+
+function showThinking(){
+  rmThinking();
+  const box=$('msgs');
+  const d=document.createElement('div'); d.id='thinking'; d.className='thinking-row'; d.style.opacity='0';
+  d.innerHTML=`<div class="spin"></div><span>scaffolding_engine.generate() — calling claude-sonnet-4-20250514…</span>`;
+  box.appendChild(d); box.scrollTop=box.scrollHeight;
+  requestAnimationFrame(()=>{d.style.transition='opacity .2s';d.style.opacity='1';});
+}
+function rmThinking(){const e=document.getElementById('thinking');if(e)e.remove();}
+
+// ═══ 12-STEP DECISION CYCLE ════════════════════════════════════════════════
+async function runDecisionCycle() {
+  // Step 1
+  await animatePipeline([1]);
+  sysLog('receive_message() — sender: you','ev');
+
+  // Step 2 — dialogue analysis
+  await animatePipeline([1,2]);
+  const sim = S.messages.length>=2
+    ? semanticSimilarity(S.messages[S.messages.length-1].text, S.messages[S.messages.length-2].text)
+    : 0;
+  const reasoning = countReasoning(S.messages[S.messages.length-1].text);
+  sysLog(`dialogue_analysis: sim=${sim.toFixed(2)} reasoning=${reasoning}`);
+
+  // Step 3 — participation
+  await animatePipeline([1,2,3]);
+  const pImbalance = checkParticipation();
+
+  // Step 4 — participation intervention?
+  await animatePipeline([1,2,3,4]);
+  if(pImbalance) {
+    sysLog(`participation.check_imbalance(): ${pImbalance.type} — ${pImbalance.name}`,'violet');
+    if(pImbalance.type==='underparticipation') {
+      addScaffold('part','underparticipation detected',
+        `${pImbalance.name}, we haven't heard much from you yet — what are your thoughts on the supervised vs. unsupervised trade-offs? Any perspective would strengthen the analysis.`,'part');
+    } else {
+      addScaffold('part','overparticipation detected',
+        `${pImbalance.name} has shared some strong points. Before we continue — what do others in the group think? Are there angles the analysis is missing?`,'part');
+    }
+    await animatePipeline([1,2,3,4,11,12]);
+    return;
+  }
+  sysLog('participation: no_imbalance');
+
+  // Step 5 — fading check
+  await animatePipeline([1,2,3,4,5]);
+  if(S.fading==='fade') { sysLog('fading.state=FULL_FADE — no intervention','ev'); return; }
+  if(isPaused()) {
+    sysLog(`fading.is_paused()=true — pause_remaining=${Math.round((S.paused_until-Date.now())/1000)}s`,'warn');
+    return;
+  }
+  sysLog(`fading.is_paused()=false | state=${FADING_LABELS[S.fading]}`);
+
+  // Step 6 — ZPD estimation
+  await animatePipeline([1,2,3,4,5,6]);
+  const zpd = estimateZPD();
+  S.zpd_trigger = zpd.trigger;
+  updateZPD();
+  sysLog(`zpd_estimator: gap=${zpd.gap.toFixed(2)} trigger=${zpd.trigger} reason=${zpd.reason}`);
+
+  if(!zpd.trigger) {
+    // Steps 11-12: record progress
+    await animatePipeline([1,2,3,4,5,6,11,12]);
+    sysLog('fading.record_progress() — no bottleneck','ev');
+    S.dep_risk = Math.max(0, S.dep_risk - 3);
+    updateMetrics();
+    return;
+  }
+
+  // Step 7 — select level
+  await animatePipeline([1,2,3,4,5,6,7]);
+  const level = isLevelAvailable('l1') ? 'l1' : null;
+  if(!level) { sysLog('No scaffold level available in current fading state','warn'); return; }
+  sysLog(`select_scaffold_level(): ${level.toUpperCase()}`,'info');
+
+  // Step 8 — generate
+  await animatePipeline([1,2,3,4,5,6,7,8]);
+  showThinking();
+  const text = await callLLM(level, `ZPD gap detected. Similarity=${sim.toFixed(2)}. Reason: ${zpd.reason}`);
+  rmThinking();
+  sysLog(`scaffolding_engine.generate(): ${level.toUpperCase()} — ${text.length} chars`);
+
+  // Step 9 — dependency check
+  await animatePipeline([1,2,3,4,5,6,7,8,9]);
+  const depTriggered = checkDependency();
+  S.dep_risk = Math.min(100, S.dep_risk + 8);
+
+  // Step 10 — push event
+  await animatePipeline([1,2,3,4,5,6,7,8,9,10]);
+  if(depTriggered) {
+    const meta = await callLLM('meta','Dependency pattern detected — generate metacognitive prompt');
+    addScaffold('pause','dependency detected — scaffold paused',
+      meta||FALLBACKS.meta,'pause');
+  } else {
+    addScaffold(level, `zpd_gap=${zpd.gap.toFixed(2)} · ${zpd.reason}`, text);
+  }
+
+  // Steps 11-12
+  await animatePipeline([1,2,3,4,5,6,7,8,9,10,11,12]);
+  sysLog('fading.record_progress()');
+  updateMetrics(); renderFading();
+}
+
+// ═══ PEER RESPONSES ════════════════════════════════════════════════════════
+async function peerResponse() {
+  if(Math.random()<.72) {
+    showTyping('alex');
+    await sleep(1100+Math.random()*900);
+    rmTyping();
+    addMsg('alex', ALEX[Math.floor(Math.random()*ALEX.length)]);
+  }
+  if(Math.random()<.44) {
+    await sleep(700+Math.random()*600);
+    showTyping('sam');
+    await sleep(1000+Math.random()*800);
+    rmTyping();
+    addMsg('sam', SAM[Math.floor(Math.random()*SAM.length)]);
+  }
+}
+
+// ═══ SEND ════════════════════════════════════════════════════════════════
+function send() {
+  const ci=$('ci'), text=ci.value.trim();
+  if(!text) return;
+  ci.value=''; ci.style.height=''; updateCC();
+  addMsg('you', text);
+  setTimeout(()=>peerResponse(), 900+Math.random()*1000);
+}
+
+// ═══ DEMO CONTROLS ═══════════════════════════════════════════════════════
+function simDom() {
+  for(let i=0;i<4;i++) setTimeout(()=>addMsg('alex',ALEX[Math.floor(Math.random()*ALEX.length)]),i*700);
+  sysLog('DEMO: alex_domination triggered','warn');
+}
+function simSilent() {
+  S.counts.sam=0; renderParticipation(); updateMetrics();
+  addScaffold('part','DEMO: underparticipation — Sam',
+    "Sam, we haven't heard from you in a while — what's your view on the interpretability versus accuracy trade-off in a clinical setting?",'part');
+  sysLog('DEMO: sam_participation zeroed','warn');
+}
+async function simStag() {
+  S.zpd_gap=.85; S.zpd_trigger=true; updateZPD();
+  sysLog('DEMO: stagnation scenario triggered','warn');
+  showThinking();
+  const text = await callLLM('l1','DEMO stagnation — group is circling the same supervised learning points');
+  rmThinking();
+  addScaffold('l1','DEMO · stagnation_detected (similarity>0.85)',text);
+}
+async function forceL1() {
+  showThinking();
+  const text = await callLLM('l1','Instructor-triggered L1 scaffold');
+  rmThinking();
+  addScaffold('l1','instructor_triggered · L1',text);
+  S.scaffolds++; updateMetrics();
+}
+async function forceL2() {
+  if(!isLevelAvailable('l2')){sysLog('L2 blocked by current fading state','warn');return;}
+  showThinking();
+  const text = await callLLM('l2','Instructor-triggered L2 scaffold');
+  rmThinking();
+  addScaffold('l2','instructor_triggered · L2',text);
+  S.scaffolds++; updateMetrics();
+}
+async function forceL3() {
+  if(!isLevelAvailable('l3')){sysLog('L3 only available in FULL_SCAFFOLD state','warn');return;}
+  showThinking();
+  const text = await callLLM('l3','Instructor-triggered L3 scaffold');
+  rmThinking();
+  addScaffold('l3','instructor_triggered · L3',text);
+  S.scaffolds++; updateMetrics();
+}
+function advFade() {
+  const idx=FADING_STATES.indexOf(S.fading);
+  if(idx<FADING_STATES.length-1) advFadeInternal();
+  else sysLog('Already at FULL_FADE state','info');
+}
+
+function resetSess() {
+  S={messages:[],counts:{you:0,alex:0,sam:0},total:0,scaffolds:0,peers:0,dep_risk:0,
+    fading:'full',progress_counter:0,last_scaffold_ts:null,last_user_ts:null,
+    scaffold_log:[],peer_rates:[],paused_until:0,zpd_gap:.7,zpd_trigger:false,
+    cooldown:0,session_start:Date.now()};
+  $('msgs').innerHTML=''; $('sys-log').innerHTML='';
+  for(let i=1;i<=12;i++) { const e=$(`ps${i}`); if(e){e.classList.remove('active','done');} }
+  renderParticipation(); renderFading(); updateMetrics(); updateZPD();
+  sysLog('Session reset','ev');
+  sysLog('Participants: You, Alex, Sam');
+  sysLog('fading_state: FULL_SCAFFOLD');
+  init();
+}
+
+// ═══ INPUT HELPERS ════════════════════════════════════════════════════════
+function updateCC(){$('cc').textContent=`${$('ci').value.length} / 600`;}
+$('ci').addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}
+});
+$('ci').addEventListener('input',()=>{
+  updateCC();
+  const el=$('ci'); el.style.height='auto';
+  el.style.height=Math.min(el.scrollHeight,110)+'px';
+});
+
+// ═══ INIT ══════════════════════════════════════════════════════════════════
+function init() {
+  setTimeout(()=>addMsg('alex',
+    "Alright, let's get started. I think supervised learning is the obvious choice for medical diagnosis — we have massive labeled datasets from hospital records, and CNNs achieve over 95% accuracy on image-based diagnostics. The evidence is clear."),
+    700);
+  setTimeout(()=>addMsg('sam',
+    "I'm not sure I fully understand yet — what does unsupervised learning actually do in a medical context? Can it even be used for diagnosis, or only for pattern discovery?"),
+    2400);
+}
+
+renderParticipation(); renderFading(); updateMetrics(); updateZPD();
+sysLog('System initialised — modules loaded','ev');
+sysLog('FadingController: state=FULL_SCAFFOLD');
+sysLog('ZPDEstimator: gap_prior=0.70');
+sysLog('ParticipationBalancer: thresholds loaded from config.py');
+sysLog('AdaptiveScaffoldingEngine: model=claude-sonnet-4-20250514');
+sysLog('WebSocket: ready for session');
+init();
+</script>
+</body>
+</html>

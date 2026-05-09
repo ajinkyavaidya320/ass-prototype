@@ -1,0 +1,374 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #020617;
+  color: white;
+  font-family: Inter, sans-serif;
+}
+
+.workspace {
+  display: grid;
+  grid-template-columns: 320px minmax(0, 1fr) 360px;
+  height: 100vh;
+  width: 100%;
+  overflow: hidden;
+  background: #020617;
+}
+
+/* SIDEBAR */
+
+.sidebar {
+  border-right: 1px solid #1e293b;
+  padding: 20px;
+  background: #050816;
+  overflow-y: auto;
+  height: 100vh;
+}
+
+.logoBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 30px;
+}
+
+.logoBar h1 {
+  color: #00ffd5;
+  margin: 0;
+}
+
+.logoBar span {
+  border: 1px solid #334155;
+  padding: 6px 12px;
+  border-radius: 8px;
+  color: #94a3b8;
+}
+
+.panel {
+  border: 1px solid #1e293b;
+  background: #0b1120;
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.panel h3 {
+  color: #64748b;
+  font-size: 12px;
+  letter-spacing: 2px;
+  margin-bottom: 20px;
+}
+
+.taskCard {
+  border: 1px solid #00ffd5;
+  border-radius: 14px;
+  padding: 18px;
+  background: rgba(0,255,213,0.05);
+}
+
+.taskCard h2 {
+  margin-top: 0;
+  font-size: 24px;
+}
+
+.taskCard p {
+  color: #94a3b8;
+  line-height: 1.7;
+}
+
+.participant {
+  margin-bottom: 20px;
+}
+
+.participant span {
+  display: block;
+  margin-bottom: 10px;
+}
+
+.bar {
+  width: 100%;
+  height: 10px;
+  background: #1e293b;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.fill {
+  height: 100%;
+  width: 60%;
+}
+
+.cyan {
+  background: #00e5ff;
+}
+
+.green {
+  background: #00ff95;
+}
+
+.pink {
+  background: #ff4d8d;
+  width: 70%;
+}
+
+/* CHAT */
+
+.chatArea {
+  display: flex;
+  flex-direction: column;
+  background: #020617;
+  min-width: 0;
+  height: 100vh;
+}
+
+.topBar {
+  height: 70px;
+  border-bottom: 1px solid #1e293b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 40px;
+  color: #94a3b8;
+}
+
+.messages {
+  flex: 1;
+  padding: 30px;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.message {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 30px;
+}
+
+.avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+.blue {
+  background: #0ea5e9;
+}
+
+.purple {
+  background: #8b5cf6;
+}
+
+.message h4 {
+  margin: 0 0 10px;
+}
+
+.message p {
+  color: #d1d5db;
+  line-height: 1.8;
+  max-width: 650px;
+}
+
+.inputBar {
+  border-top: 1px solid #1e293b;
+  padding: 20px;
+  display: flex;
+  gap: 20px;
+}
+
+.inputBar input {
+  flex: 1;
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  padding: 16px;
+  color: white;
+  font-size: 16px;
+}
+
+.inputBar button {
+  background: #00d084;
+  border: none;
+  border-radius: 12px;
+  padding: 0 30px;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+/* RIGHT */
+
+.rightPanel {
+  border-left: 1px solid #1e293b;
+  padding: 20px;
+  background: #050816;
+  overflow-y: auto;
+  height: 100vh;
+}
+
+.large {
+  height: 14px;
+  margin-bottom: 20px;
+}
+
+.log p {
+  color: #94a3b8;
+  margin-bottom: 14px;
+}
+.activeTask {
+  color: #00ffd5;
+  margin-bottom: 15px;
+  font-size: 14px;
+}
+
+.participantRow {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.small {
+  width: 5%;
+}
+
+.fadeItem {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  color: #cbd5e1;
+}
+
+.activeFade {
+  border: 1px solid #334155;
+  background: #111827;
+}
+
+.metricsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.metricCard {
+  border: 1px solid #1e293b;
+  border-radius: 14px;
+  padding: 20px;
+  background: #081120;
+}
+
+.metricCard h2 {
+  margin: 0;
+  color: #00e5ff;
+}
+
+.metricCard p {
+  margin-top: 10px;
+  color: #94a3b8;
+}
+
+.sessionBar {
+  height: 60px;
+  border-bottom: 1px solid #1e293b;
+  display: flex;
+  align-items: center;
+  padding: 0 30px;
+  color: #94a3b8;
+}
+
+.zpdText {
+  margin-bottom: 15px;
+  color: #94a3b8;
+}
+
+.zpdLabels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.statusBox {
+  margin-top: 20px;
+  border: 1px solid #334155;
+  border-radius: 10px;
+  padding: 14px;
+  color: #cbd5e1;
+}
+
+.decisionList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.decisionItem {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  color: #94a3b8;
+}
+
+.stepNumber {
+  width: 24px;
+  height: 24px;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+}
+
+.controlsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.controlsGrid button {
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 10px;
+  padding: 14px;
+  color: white;
+  cursor: pointer;
+}
+
+.wideBtn {
+  grid-column: span 2;
+}
+
+.purpleFill {
+  background: #a855f7;
+  width: 55%;
+}
+
+@media (max-width: 1400px) {
+  .workspace {
+    grid-template-columns: 280px minmax(0, 1fr) 320px;
+  }
+}
+
+@media (max-width: 1200px) {
+  .workspace {
+    grid-template-columns: 260px minmax(0, 1fr);
+  }
+
+  .rightPanel {
+    display: none;
+  }
+}
+
+.panel {
+  overflow: hidden;
+}
